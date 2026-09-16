@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LPU Campus Map — Wayfinding</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+  /* Login Overlay Styles */
+  .login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #0f172a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    font-family: 'Inter', sans-serif;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+  }
+
+  .login-overlay.hidden-login {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .login-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 400px;
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  .login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .login-header .crest {
+    background: #e11d48;
+    color: #fff;
+    font-family: 'Fraunces', serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    display: inline-block;
+    margin-bottom: 0.75rem;
+  }
+
+  .login-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #1e293b;
+    font-weight: 700;
+  }
+
+  .login-header p {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: #64748b;
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.35rem;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: #e11d48;
+    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
+  }
+
+  .login-btn {
+    width: 100%;
+    padding: 0.85rem;
+    background-color: #e11d48;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 0.5rem;
+  }
+
+  .login-btn:hover {
+    background-color: #be123c;
+  }
+</style>
+</head>
+<body>
+
+  <!-- LOGIN PORTAL OVERLAY -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+      <div class="login-header">
+        <span class="crest">LPU</span>
+        <h2>Student / Staff Portal</h2>
+        <p>Enter credentials to access Campus Wayfinder</p>
+      </div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="userId">User ID</label>
+          <input type="text" id="userId" placeholder="e.g. lpu_user123" required autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="regNo">Registration Number</label>
+          <input type="text" id="regNo" placeholder="e.g. 12204982" required autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="login-btn">Access Campus Map</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN APP WRAPPER -->
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <header class="sidebar-header">
+        <span class="crest">LPU</span>
+        <div>
+          <h1>Campus Wayfinder</h1>
+          <p class="subtitle">Lovely Professional University, Phagwara</p>
+        </div>
+      </header>
+
+      <div class="search-wrap">
+        <input id="searchInput" type="text" placeholder="Search a block, hostel, gate..." autocomplete="off">
+        <ul id="searchResults" class="search-results hidden"></ul>
+      </div>
+
+      <nav class="filters" id="filters">
+        <!-- category chips injected by script.js -->
+      </nav>
+
+      <div class="location-list" id="locationList">
+        <!-- location cards injected by script.js -->
+      </div>
+
+      <footer class="sidebar-footer">
+        <span id="resultCount">0</span> locations plotted
+      </footer>
+    </aside>
+
+    <!-- MAP -->
+    <main class="map-pane">
+      <div id="map"></div>
+
+      <div class="map-legend" id="legend">
+        <!-- legend dots injected by script.js -->
+      </div>
+    </main>
+
+  </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data.js"></script>
+<script src="script.js"></script>
+
+<!-- LOGIN SCREEN TOGGLE SCRIPT -->
+<script>
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Stop form submission / page refresh
+    
+    // Smoothly hide login screen overlay to reveal map
+    document.getElementById('loginOverlay').classList.add('hidden-login');
+
+    // Trigger map resizing in case Leaflet loads before container displays properly
+    if (typeof map !== 'undefined' && map.invalidateSize) {
+      setTimeout(() => { map.invalidateSize(); }, 300);
+    }
+  });
+</script>
+
+</body>
+</html>
